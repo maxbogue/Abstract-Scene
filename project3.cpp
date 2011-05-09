@@ -14,8 +14,8 @@ using namespace std;
 
 bool solid;
 
-int width = 500;
-int height = 500;
+int width = 1920;
+int height = 1200;
 
 // Eye coords.
 int ex, ey, ez;
@@ -210,11 +210,11 @@ void keyboard(unsigned char key, int x, int y) {
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    // glutGameModeString("640x480:16@60");
-    // glutEnterGameMode();
-    glutInitWindowSize(width, height); 
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow(argv[0]);
+    glutGameModeString("1920x1200:16@60");
+    glutEnterGameMode();
+    // glutInitWindowSize(width, height); 
+    // glutInitWindowPosition(100, 100);
+    // glutCreateWindow(argv[0]);
     init();
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
