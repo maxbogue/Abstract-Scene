@@ -23,6 +23,8 @@ int ex, ey, ez;
 GLdouble dx, dy, dz;
 
 double rotOffset[3];
+double cubeEdgeScale;
+bool cubeEdgeGrow;
 
 void reset() {
     solid = false;
@@ -35,6 +37,8 @@ void reset() {
     rotOffset[0] = 0;
     rotOffset[1] = 0;
     rotOffset[2] = 0;
+    cubeEdgeScale = 0;
+    cubeEdgeGrow = false;
 }
 
 void init(void) {
@@ -77,6 +81,32 @@ void makeSphereSphere(float r, int sr) {
     }
 }
 
+void makeCubes(int dist, int size) {
+    for (int i = 0; i < 12; i++) {
+        glPushMatrix();
+        int x, y, z;
+        int d = i / 4;
+        int r = i % 4;
+        x = d == 0 ? dist : (d == 1 ? -dist : 0);
+        if (i < 8) {
+            y = r == 0 ? dist : (r == 1 ? -dist : 0);
+            z = r == 2 ? dist : (r == 3 ? -dist : 0);
+        } else {
+            y = r < 2 ? dist : -dist;
+            z = r % 2 ? -dist : dist;
+        }
+        glTranslatef(x, y, z);
+        float s = cubeEdgeScale * 2.0 * dist / size + 1;
+        glScalef(x ? 1 : s, y ? 1 : s, z ? 1 : s);
+        if (solid) {
+            glutSolidCube(size);
+        } else {
+            glutWireCube(size);
+        }
+        glPopMatrix();
+    }
+}
+
 void display(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -84,26 +114,25 @@ void display(void) {
     gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
     
     // Make the enclosing sphere.
-    glColor3f(1.0, 0.0, 1.0);
+    glColor3f(10/255.0, 85/255.0, 175/255.0);
     if (solid) {
         glutSolidSphere(50, 100, 100);
     } else {
         glutWireSphere(50, 100, 100);
     }
+    
     // Make the sphere of spheres touching the outer sphere.
-    glColor3f(1.0, 1.0, 0.0);
+    glColor3f(0/255.0, 204/255.0, 255/255.0);
     makeSphereSphere(47, 5);
-    // glLoadIdentity();
-    // gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    // glScalef(1.0, 2.0, 1.0);      /* modeling transformation */ 
-    // glRotatef(spin_y, 1.0, 0.0, 0.0);
-    // glRotatef(spin_x, 0.0, 1.0, 0.0);
-    glColor3f(0.0, 1.0, 0.0);
-    // glTranslatef(5,0,0);
-    // glutSolidSphere(1, 100, 100);
-    // glTranslatef(5,0,0);
-    // glutSolidSphere(1, 100, 100);
+    
+    // Make the inner sphere of spheres.
+    glColor3f(204/255.0, 255/255.0, 0/255.0);
     makeSphereSphere(10, 1);
+    
+    // Make the cubes.
+    glColor3f(255/255.0, 0/255.0, 204/255.0);
+    makeCubes(15, 1);
+    
     glPopMatrix();
     
     glutSwapBuffers();
@@ -119,8 +148,26 @@ void reshape(int w, int h) {
     glLoadIdentity();
 }
 
+void sizeCube(int v) {
+    bool cond = false;
+    if (cubeEdgeGrow && cubeEdgeScale < 1.0) {
+        cubeEdgeScale += 0.01;
+        cond = cubeEdgeScale < 1.0;
+    } else if (!cubeEdgeGrow && cubeEdgeScale > 0.0) {
+        cubeEdgeScale -= 0.01;
+        cond = cubeEdgeScale > 0.0;
+    }
+    if (cond) {
+        glutTimerFunc(10, sizeCube, 0);
+    }
+}
+
 void mouse( int button, int state, int x, int y ) {
-    glutPostRedisplay();
+    if (state == GLUT_UP) {
+        cubeEdgeGrow = !cubeEdgeGrow;
+        sizeCube(0);
+        glutPostRedisplay();
+    }
 }
 
 void motion( int x, int y ) {
