@@ -1,3 +1,7 @@
+// Awesome 3D scene project for CG1.
+// Author: Max Bogue
+// Date: 5/8/2011
+
 #if defined(__APPLE__) && defined(__MACH__)  // for mac
 #   include <GLUT/glut.h>
 #else // for others
@@ -12,20 +16,20 @@
 
 using namespace std;
 
-bool solid;
+// Not actually sure what these should default to..
+int width = 1024;
+int height = 768;
 
-int width = 1920;
-int height = 1200;
+bool solid;             // Whether shapes are solid or wireframe.
 
-// Eye coords.
-int ex, ey, ez;
-// Delta from the eye to the reference.
-GLdouble dx, dy, dz;
+int ex, ey, ez;         // Eye coords.
+double dx, dy, dz;      // Delta from the eye to the reference.
 
-double rotOffset[3];
-double cubeEdgeScale;
-bool cubeEdgeGrow;
+double rotOffset[2];    // The rotations of all spheres.
+double cubeEdgeScale;   // How scaled the cube edges are.
+bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
 
+// Sets all global values to their defaults.
 void reset() {
     solid = false;
     ex = -20;
@@ -36,21 +40,29 @@ void reset() {
     dz = 0;
     rotOffset[0] = 0;
     rotOffset[1] = 0;
-    rotOffset[2] = 0;
     cubeEdgeScale = 0;
     cubeEdgeGrow = false;
 }
 
+// Initialize globals and GL.
 void init(void) {
     reset();
+    glClearDepth(1.0);
     glClearColor(0.0, 0.0, 0.0, 0.0); 
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_SCISSOR_TEST);
 }
 
-void makeSphereRing(float y, float r, int sphereR) {
+/**
+ * Constructs a series of spheres positioned in a ring.
+ * @param y     The height of the ring.
+ * @param r     The radius of the ring.
+ * @param sr    The radius of each sphere.
+ */
+void makeSphereRing(float y, float r, int sr) {
     glPushMatrix();
-    int n = (int) (PI * r / sphereR / 2);
+    int n = (int) (PI * r / sr / 2);
     float angle = 360.0 / n;
     glTranslatef(0,y,0);
     for (int i = 0; i < n; i++) {
@@ -58,15 +70,20 @@ void makeSphereRing(float y, float r, int sphereR) {
         glPushMatrix();
         glTranslatef(r,0,0);
         if (solid) {
-            glutSolidSphere(sphereR, 15, 15);
+            glutSolidSphere(sr, 15, 15);
         } else {
-            glutWireSphere(sphereR, 15, 15);
+            glutWireSphere(sr, 15, 15);
         }
         glPopMatrix();
     }
     glPopMatrix();
 }
 
+/**
+ * Constructs a series of sphere rings positioned in a sphere.
+ * @param r     The radius of the ring.
+ * @param sr    The radius of each sphere.
+ */
 void makeSphereSphere(float r, int sr) {
     int n = (int) (r / sr / 2);
     float yStep = 2 * r / n;
@@ -81,6 +98,12 @@ void makeSphereSphere(float r, int sr) {
     }
 }
 
+/**
+ * Constructs a series of cubes positioned such that when stretched out they
+ * form the outline of a larger cube.
+ * @param dist  The distance in each direction from the origin a cube is.
+ * @param size  The size of each cube.
+ */
 void makeCubes(int dist, int size) {
     for (int i = 0; i < 12; i++) {
         glPushMatrix();
@@ -107,11 +130,22 @@ void makeCubes(int dist, int size) {
     }
 }
 
-void display(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+// Makes a spinning torus.
+void makeTorus() {
     glPushMatrix();
-    gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
+    glRotatef(90, 1, 0, 0);
+    glRotatef(rotOffset[1] * 4, 0, 1, 0);
+    if (solid) {
+        glutSolidTorus(0.4, 3.0, 30, 50);
+    } else {
+        glutWireTorus(0.4, 3.0, 30, 50);
+    }
+    glPopMatrix();
+}
+
+// General construction of the world; called for each viewport.
+void makeWorld() {
+    glPushMatrix();
     
     // Make the enclosing sphere.
     glColor3f(10/255.0, 85/255.0, 175/255.0);
@@ -129,47 +163,72 @@ void display(void) {
     glColor3f(204/255.0, 255/255.0, 0/255.0);
     makeSphereSphere(10, 1);
     
-    // Make the cubes.
+    // Make the cubes and torus.
     glColor3f(255/255.0, 0/255.0, 204/255.0);
     makeCubes(15, 1);
+    makeTorus();
     
     glPopMatrix();
-    
-    glutSwapBuffers();
-    glFlush();
 }
 
-void reshape(int w, int h) {
-    glViewport(0, 0, (GLsizei) w, (GLsizei) h); 
+// The main display function.
+void display(void) {
+    
+    // Main viewport.
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(90, w / (GLdouble) h, 1, 120);
+    glViewport(0, 0, width, height);
+    gluPerspective(60, width / (GLdouble) height, 1, 120);
     glMatrixMode(GL_MODELVIEW);
+    glScissor(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
+    makeWorld();
+    
+    // Upper-right reverse viewport.
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(width * 0.75, height * 0.75, width * 0.25, height * 0.25);
+    gluPerspective(60, width / (GLdouble) height, 1, 100);
+    glMatrixMode(GL_MODELVIEW);
+    glScissor(width * 0.75, height * 0.75, width * 0.25, height * 0.25);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    gluLookAt(ex, ey, ez, ex - dx, ey + dy, ez - dz, 0.0, 1.0, 0.0);
+    makeWorld();
+    
+    // The crucial end functions.
+    glFlush();
+    glutSwapBuffers();
+    
 }
 
-void sizeCube(int v) {
+// The scaling of the cube edges happens here.
+void scaleCubeEdges(int v) {
     bool cond = false;
     if (cubeEdgeGrow && cubeEdgeScale < 1.0) {
-        cubeEdgeScale += 0.01;
+        cubeEdgeScale += 0.02;
         cond = cubeEdgeScale < 1.0;
     } else if (!cubeEdgeGrow && cubeEdgeScale > 0.0) {
-        cubeEdgeScale -= 0.01;
+        cubeEdgeScale -= 0.02;
         cond = cubeEdgeScale > 0.0;
     }
     if (cond) {
-        glutTimerFunc(10, sizeCube, 0);
+        glutTimerFunc(5, scaleCubeEdges, 0);
     }
 }
 
+// Called on mouse click.
 void mouse( int button, int state, int x, int y ) {
     if (state == GLUT_UP) {
         cubeEdgeGrow = !cubeEdgeGrow;
-        sizeCube(0);
+        scaleCubeEdges(0);
         glutPostRedisplay();
     }
 }
 
+// Called on mouse motion.
 void motion( int x, int y ) {
     // Cap x and y at the width and height of the screen.
     // Don't judge me because of my nested ternary operators.
@@ -181,17 +240,17 @@ void motion( int x, int y ) {
     glutPostRedisplay( );
 }
 
+// Repeating timer.  Rotates the sphere spheres.
 void timer(int v) {
     rotOffset[0] = (rotOffset[0] + 0.25);
-    rotOffset[1] = (rotOffset[1] + 359.5);// % 360;
+    rotOffset[1] = (rotOffset[1] + 359.5);
+    if (rotOffset[0] >= 360) rotOffset[0] -= 360;
+    if (rotOffset[1] >= 360) rotOffset[1] -= 360;
     glutTimerFunc(15, timer, 0);
     glutPostRedisplay();
 }
 
-void idle() {
-    glutPostRedisplay();
-}
-
+// Called on keypress.
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
         case 'w': ex++; break;
@@ -207,15 +266,29 @@ void keyboard(unsigned char key, int x, int y) {
     }
 }
 
+// Called when the window changes sizes.
+void reshape(int w, int h) {
+    width = w;
+    height = h;
+}
+
+// Idle function; just refreshes the display.
+void idle() {
+    glutPostRedisplay();
+}
+
+// Mainy McMainerson.
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutGameModeString("1920x1200:16@60");
-    glutEnterGameMode();
-    // glutInitWindowSize(width, height); 
-    // glutInitWindowPosition(100, 100);
-    // glutCreateWindow(argv[0]);
+    // Game mode is pretty awesome, I recommend it.
+    // glutGameModeString("1920x1200:16@60");
+    // glutEnterGameMode();
+    glutInitWindowSize(width, height); 
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow(argv[0]);
     init();
+    // Register functions!  Oh C++ and its pseudo first-order functions...
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
     glutDisplayFunc(display);
