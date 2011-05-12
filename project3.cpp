@@ -22,11 +22,11 @@ int height = 768;
 
 bool solid;             // Whether shapes are solid or wireframe.
 
-double ex, ey, ez;         // Eye coords.
-double dx, dy, dz;      // Delta from the eye to the reference.
+GLdouble ex, ey, ez;         // Eye coords.
+GLdouble dx, dy, dz;      // Delta from the eye to the reference.
 
-double rotOffset[2];    // The rotations of all spheres.
-double cubeEdgeScale;   // How scaled the cube edges are.
+GLdouble rotOffset[2];    // The rotations of all spheres.
+GLdouble cubeEdgeScale;   // How scaled the cube edges are.
 bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
 
 // Sets all global values to their defaults.
@@ -60,10 +60,10 @@ void init(void) {
  * @param r     The radius of the ring.
  * @param sr    The radius of each sphere.
  */
-void makeSphereRing(float y, float r, int sr) {
+void makeSphereRing(GLfloat y, GLfloat r, int sr) {
     glPushMatrix();
     int n = (int) (PI * r / sr / 2);
-    float angle = 360.0 / n;
+    GLfloat angle = 360.0 / n;
     glTranslatef(0,y,0);
     for (int i = 0; i < n; i++) {
         glRotatef(angle, 0.0, 1.0, 0.0);
@@ -84,14 +84,14 @@ void makeSphereRing(float y, float r, int sr) {
  * @param r     The radius of the ring.
  * @param sr    The radius of each sphere.
  */
-void makeSphereSphere(float r, int sr) {
+void makeSphereSphere(GLfloat r, int sr) {
     int n = (int) (r / sr / 2);
-    float yStep = 2 * r / n;
-    float y = yStep / 2 - r;
+    GLfloat yStep = 2 * r / n;
+    GLfloat y = yStep / 2 - r;
     for (int i = 0; i < n; i++) {
         glPushMatrix();
         glRotatef(rotOffset[i % 2], 0.0, 1.0, 0.0);
-        float x = sqrt(r*r - y*y);
+        GLfloat x = sqrt(r*r - y*y);
         makeSphereRing(y, x, sr);
         y += yStep;
         glPopMatrix();
@@ -119,7 +119,7 @@ void makeCubes(int dist, int size) {
             z = r % 2 ? -dist : dist;
         }
         glTranslatef(x, y, z);
-        float s = cubeEdgeScale * 2.0 * dist / size + 1;
+        GLfloat s = cubeEdgeScale * 2.0 * dist / size + 1;
         glScalef(x ? 1 : s, y ? 1 : s, z ? 1 : s);
         if (solid) {
             glutSolidCube(size);
@@ -237,7 +237,7 @@ void motion( int x, int y ) {
     dy = y - height / 2.0;
     dz = x - width / 2.0;
     dx = ((height / 2.0 - abs(dy)) + (width / 2.0 - abs(dz))) / 2;
-    double norm = sqrt(dx*dx + dy*dy + dz*dz);
+    GLdouble norm = sqrt(dx*dx + dy*dy + dz*dz);
     dx /= norm;
     dy /= norm;
     dz /= norm;
