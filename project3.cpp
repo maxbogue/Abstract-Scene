@@ -22,7 +22,7 @@ int height = 768;
 
 bool solid;             // Whether shapes are solid or wireframe.
 
-int ex, ey, ez;         // Eye coords.
+double ex, ey, ez;         // Eye coords.
 double dx, dy, dz;      // Delta from the eye to the reference.
 
 double rotOffset[2];    // The rotations of all spheres.
@@ -237,6 +237,10 @@ void motion( int x, int y ) {
     dy = y - height / 2.0;
     dz = x - width / 2.0;
     dx = ((height / 2.0 - abs(dy)) + (width / 2.0 - abs(dz))) / 2;
+    double norm = sqrt(dx*dx + dy*dy + dz*dz);
+    dx /= norm;
+    dy /= norm;
+    dz /= norm;
     glutPostRedisplay( );
 }
 
@@ -253,10 +257,10 @@ void timer(int v) {
 // Called on keypress.
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
-        case 'w': ex++; break;
-        case 's': ex--; break;
-        case 'd': ez++; break;
-        case 'a': ez--; break;
+        case 'w': ex += dx; ey -= dy; ez += dz; break;
+        case 's': ex -= dx; ey += dy; ez -= dz; break;
+        case 'a': ex += dz; ez -= dx; break;
+        case 'd': ex -= dz; ez += dx; break;
         case ' ': ey++; break;
         case 'z': ey--; break;
         case '1': solid = false; break;
