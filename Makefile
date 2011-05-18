@@ -21,19 +21,19 @@
 LDLIBS = -lglut -lGLU -lGL
 MACLDLIBS = -framework GLUT -framework OpenGL -framework Cocoa
 
-SOURCE_C = project3.cpp
+SOURCE_C = project4.cpp
 SOURCE_H = 
-OBJ_FILES = project3.o
-BINARY = project3
+OBJ_FILES = project4.o
+BINARY = project4
 
 CC =       gcc
 CXX =      g++
 
 COMPILER_FLAGS = -g
 
-all:	project3
+all:	project4
 
-project3: $(OBJFILES) $(SOURCE_H) $(SOURCE_C)
+project4: $(OBJFILES) $(SOURCE_H) $(SOURCE_C)
 	$(CXX) $(COMPILER_FLAGS) -c $(SOURCE_C)
 	$(CXX) $(LDLIBS) -o $(BINARY) $(OBJ_FILES)
 
