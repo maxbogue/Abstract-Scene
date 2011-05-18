@@ -1,0 +1,20 @@
+Name: Max Bogue
+Date: 5/8/2011
+
+An awesome 3D scene for CG1.  Developed and built on Mac OS X, but the
+makefile supports the following:
+
+    Solaris Build:
+      - make
+      - make all
+      - make tessellation
+    OS X Build:
+      - make mac
+    Cleanup:
+      - make clean
+      - make realclean
+
+I hope you enjoy!  No teapots, I promise.  I hope the movement is correct;
+it would have been interesting to support moving in the camera direction,
+but the project description didn't really seem to support that so I took
+forward to mean the positive x-axis...
