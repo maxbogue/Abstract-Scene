@@ -28,6 +28,7 @@ GLdouble dx, dy, dz;      // Delta from the eye to the reference.
 GLdouble rotOffset[2];    // The rotations of all spheres.
 GLdouble cubeEdgeScale;   // How scaled the cube edges are.
 bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
+bool fogEnabled;
 
 // Sets all global values to their defaults.
 void reset() {
@@ -42,6 +43,8 @@ void reset() {
     rotOffset[1] = 0;
     cubeEdgeScale = 0;
     cubeEdgeGrow = false;
+    fogEnabled = false;
+    glDisable( GL_FOG );
 }
 
 // Initialize globals and GL.
@@ -52,6 +55,15 @@ void init(void) {
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
+    
+    // glEnable( GL_FOG );
+    glFogi( GL_FOG_MODE, GL_LINEAR );
+    GLfloat fogColor[4] = { 0.0, 0.0, 0.0, 0.5 };  // fog color - gray
+    glFogfv( GL_FOG_COLOR, fogColor );
+    glFogf( GL_FOG_DENSITY, 1.0 );
+    glHint( GL_FOG_HINT, GL_NICEST );
+    glFogf( GL_FOG_START, 5.0 );
+    glFogf( GL_FOG_END, 50.0 );
 }
 
 /**
@@ -267,6 +279,14 @@ void keyboard(unsigned char key, int x, int y) {
         case '2': solid = true; break;
         case 'r': reset(); break;
         case 'q': exit(0);
+        case 'f':
+            if (fogEnabled) {
+                glDisable(GL_FOG);
+            } else {
+                glEnable( GL_FOG );
+            }
+            fogEnabled = !fogEnabled;
+            break;
     }
 }
 
