@@ -30,9 +30,51 @@ GLdouble cubeEdgeScale;   // How scaled the cube edges are.
 bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
 bool fogEnabled;
 bool lightsEnabled;
+
+// NURB data.
 GLUnurbsObj *nurb;
 GLfloat nurbCPs[4][4][3];
 GLfloat nurbKnots[8] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
+
+struct Material {
+    GLfloat c[3];
+    GLfloat a[4];
+    GLfloat d[4];
+    GLfloat s[4];
+    GLfloat e;
+};
+
+Material enclosingSphereMat = {
+    { 10/255.0, 85/255.0, 175/255.0 },
+    { 10/255.0, 85/255.0, 175/255.0, 1.0},
+    { 10/255.0, 85/255.0, 175/255.0, 1.0},
+    { 10/255.0, 85/255.0, 175/255.0, 1.0},
+    50.0,
+};
+
+Material outerSpheresMat = {
+    { 0/255.0, 204/255.0, 255/255.0 },
+    { 0/255.0, 204/255.0, 255/255.0, 1.0},
+    { 0/255.0, 204/255.0, 255/255.0, 1.0},
+    { 0/255.0, 204/255.0, 255/255.0, 1.0},
+    80.0,
+};
+
+Material innerSpheresMat = {
+    { 204/255.0, 255/255.0, 0/255.0 },
+    { 204/255.0, 255/255.0, 0/255.0, 1.0},
+    { 204/255.0, 255/255.0, 0/255.0, 1.0},
+    { 204/255.0, 255/255.0, 0/255.0, 1.0},
+    80.0,
+};
+
+Material torusMat = {
+    { 255/255.0, 0/255.0, 204/255.0 },
+    { 255/255.0, 0/255.0, 204/255.0, 1.0},
+    { 255/255.0, 0/255.0, 204/255.0, 1.0},
+    { 255/255.0, 0/255.0, 204/255.0, 1.0},
+    20.0,
+};
 
 // Sets all global values to their defaults.
 void reset() {
@@ -206,12 +248,24 @@ void makeNurb() {
     glPopMatrix();
 }
 
+void setMaterial(Material m) {
+    glColor3f(m.c[0], m.c[1], m.c[2]);
+    glMaterialfv( GL_FRONT, GL_AMBIENT,   m.a );
+    glMaterialfv( GL_FRONT, GL_DIFFUSE,   m.d );
+    glMaterialfv( GL_FRONT, GL_SPECULAR,  m.s );
+    glMaterialf ( GL_FRONT, GL_SHININESS, m.e );
+    glMaterialfv( GL_BACK, GL_AMBIENT,   m.a );
+    glMaterialfv( GL_BACK, GL_DIFFUSE,   m.d );
+    glMaterialfv( GL_BACK, GL_SPECULAR,  m.s );
+    glMaterialf ( GL_BACK, GL_SHININESS, m.e );
+}
+
 // General construction of the world; called for each viewport.
 void makeWorld() {
     glPushMatrix();
     
     // Make the enclosing sphere.
-    glColor3f(10/255.0, 85/255.0, 175/255.0);
+    setMaterial(enclosingSphereMat);
     if (solid) {
         glutSolidSphere(50, 100, 100);
     } else {
@@ -219,15 +273,15 @@ void makeWorld() {
     }
     
     // Make the sphere of spheres touching the outer sphere.
-    glColor3f(0/255.0, 204/255.0, 255/255.0);
+    setMaterial(outerSpheresMat);
     makeSphereSphere(47, 5);
     
     // Make the inner sphere of spheres.
-    glColor3f(204/255.0, 255/255.0, 0/255.0);
+    setMaterial(innerSpheresMat);
     makeSphereSphere(10, 1);
     
     // Make the cubes and torus.
-    glColor3f(255/255.0, 0/255.0, 204/255.0);
+    setMaterial(torusMat);
     makeCubes(15, 1);
     makeTorus();
     makeNurb();
