@@ -13,3 +13,6 @@ makefile supports the following:
     Cleanup:
       - make clean
       - make realclean
+
+If the scene becomes laggy, I suggest removing the NURB, as it tends
+to reek havoc on the framerate.
