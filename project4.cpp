@@ -29,10 +29,13 @@ GLdouble rotOffset[2];    // The rotations of all spheres.
 GLdouble cubeEdgeScale;   // How scaled the cube edges are.
 bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
 bool fogEnabled;
+bool lightsEnabled;
 
 // Sets all global values to their defaults.
 void reset() {
     solid = false;
+    lightsEnabled = true;
+    fogEnabled = false;
     ex = -20;
     ey = 0;
     ez = 0;
@@ -43,8 +46,6 @@ void reset() {
     rotOffset[1] = 0;
     cubeEdgeScale = 0;
     cubeEdgeGrow = false;
-    fogEnabled = false;
-    glDisable( GL_FOG );
 }
 
 // Initialize globals and GL.
@@ -56,7 +57,14 @@ void init(void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
     
-    // glEnable( GL_FOG );
+    // AZIZ! LIGHT!
+    glEnable( GL_LIGHTING );
+    glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE );
+    GLfloat light0Position[4] = { 0.0, 1.0, 0.0, 0.0 };
+    glLightfv( GL_LIGHT0, GL_POSITION, light0Position );
+    glEnable( GL_LIGHT0 );
+    
+    // Fog config. 
     glFogi( GL_FOG_MODE, GL_LINEAR );
     GLfloat fogColor[4] = { 0.0, 0.0, 0.0, 0.5 };  // fog color - gray
     glFogfv( GL_FOG_COLOR, fogColor );
@@ -186,6 +194,18 @@ void makeWorld() {
 // The main display function.
 void display(void) {
     
+    // Settings.
+    if (fogEnabled) {
+        glEnable(GL_FOG);
+    } else {
+        glDisable( GL_FOG );
+    }
+    if (lightsEnabled) {
+        glEnable( GL_LIGHTING );
+    } else {
+        glDisable( GL_LIGHTING );
+    }
+    
     // Main viewport.
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -195,6 +215,7 @@ void display(void) {
     glScissor(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    
     gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
     makeWorld();
     
@@ -279,14 +300,8 @@ void keyboard(unsigned char key, int x, int y) {
         case '2': solid = true; break;
         case 'r': reset(); break;
         case 'q': exit(0);
-        case 'f':
-            if (fogEnabled) {
-                glDisable(GL_FOG);
-            } else {
-                glEnable( GL_FOG );
-            }
-            fogEnabled = !fogEnabled;
-            break;
+        case 'f': fogEnabled = !fogEnabled; break;
+        case 'l': lightsEnabled = !lightsEnabled; break;
     }
 }
 
