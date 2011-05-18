@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <cmath>
+#include "tga_loader.cpp"
 
 #define PI 3.14159265
 
@@ -76,6 +77,12 @@ Material torusMat = {
     20.0,
 };
 
+int t1w = 512;
+int t1h = 256;
+
+GLuint textures[4];
+
+
 // Sets all global values to their defaults.
 void reset() {
     solid = false;
@@ -91,6 +98,37 @@ void reset() {
     rotOffset[1] = 0;
     cubeEdgeScale = 0;
     cubeEdgeGrow = false;
+}
+
+// LoadTexturePPM - copied from Nan's directory.
+// Originally written by: Blaine Hodge
+int loadTexture(const char * filename, int w, int h) {
+    int width, height;
+    GLubyte *data;
+    FILE * file;
+
+    /* open texture data */
+    file = fopen( filename, "rb" );
+    if ( file == NULL ) return 0;
+
+    /* allocate buffer */
+    data = (GLubyte*)malloc( w * h * 3 * (sizeof(GLubyte)));
+
+    /* read texture data */
+    fread( data, w * h * 3, 1, file );
+    fclose( file );
+
+    /* build our tex image */
+    // glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
+                                          GL_UNSIGNED_BYTE, data );
+
+    free( data );
+    return 1;
 }
 
 // Initializes the NURB control points array.
@@ -124,6 +162,7 @@ void init(void) {
     GLfloat light0Position[4] = { 0.0, 1.0, 0.0, 0.0 };
     glLightfv( GL_LIGHT0, GL_POSITION, light0Position );
     glEnable( GL_LIGHT0 );
+    glEnable( GL_LIGHT1 );
     
     // Fog config. 
     glFogi( GL_FOG_MODE, GL_LINEAR );
@@ -139,6 +178,21 @@ void init(void) {
 	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
 	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);
     initNurbCPs();
+    
+
+    glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
+    // unsigned char* tex1Data = rgb_tga("tex1.tga", &t1w, &t1h);
+    glGenTextures(1, textures);
+    
+    // glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    // glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+    // glEnable(GL_TEXTURE_GEN_S);
+    // glEnable(GL_TEXTURE_GEN_T);
+
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    if (!loadTexture("tex1.tga", 256, 256)) {
+        printf("Error loading texture!");
+    }
 }
 
 /**
@@ -185,6 +239,45 @@ void makeSphereSphere(GLfloat r, int sr) {
     }
 }
 
+void makeCube() {
+    glScalef(0.5, 0.5, 0.5);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBegin(GL_QUADS);
+    	// Front Face
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
+    	// Back Face                                              
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
+    	// Top Face                                               
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
+    	// Bottom Face                                            
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
+    	// Right face                                             
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
+    	// Left Face                                              
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
+    	glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
+    	glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
+    	glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+}
+
 /**
  * Constructs a series of cubes positioned such that when stretched out they
  * form the outline of a larger cube.
@@ -192,6 +285,7 @@ void makeSphereSphere(GLfloat r, int sr) {
  * @param size  The size of each cube.
  */
 void makeCubes(int dist, int size) {
+    
     for (int i = 0; i < 12; i++) {
         glPushMatrix();
         int x, y, z;
@@ -209,7 +303,10 @@ void makeCubes(int dist, int size) {
         GLfloat s = cubeEdgeScale * 2.0 * dist / size + 1;
         glScalef(x ? 1 : s, y ? 1 : s, z ? 1 : s);
         if (solid) {
-            glutSolidCube(size);
+            
+            // glBindTexture(GL_TEXTURE_2D, textures[0]);
+            // glutSolidCube(size);
+            makeCube();
         } else {
             glutWireCube(size);
         }
@@ -284,7 +381,7 @@ void makeWorld() {
     setMaterial(torusMat);
     makeCubes(15, 1);
     makeTorus();
-    makeNurb();
+    // makeNurb();
     
     glPopMatrix();
 }
