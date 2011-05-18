@@ -13,8 +13,3 @@ makefile supports the following:
     Cleanup:
       - make clean
       - make realclean
-
-I hope you enjoy!  No teapots, I promise.  I hope the movement is correct;
-it would have been interesting to support moving in the camera direction,
-but the project description didn't really seem to support that so I took
-forward to mean the positive x-axis...
