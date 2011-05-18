@@ -30,6 +30,9 @@ GLdouble cubeEdgeScale;   // How scaled the cube edges are.
 bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
 bool fogEnabled;
 bool lightsEnabled;
+GLUnurbsObj *nurb;
+GLfloat nurbCPs[4][4][3];
+GLfloat nurbKnots[8] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
 
 // Sets all global values to their defaults.
 void reset() {
@@ -46,6 +49,22 @@ void reset() {
     rotOffset[1] = 0;
     cubeEdgeScale = 0;
     cubeEdgeGrow = false;
+}
+
+// Initializes the NURB control points array.
+// Code taken from the nurb.c example and tweaked to my needs.
+void initNurbCPs() {
+	for (int u = 0; u < 4; u++) {
+		for (int v = 0; v < 4; v++) {
+			nurbCPs[u][v][0] = 3.0*((GLfloat)u - 1.5);
+			nurbCPs[u][v][1] = 3.0*((GLfloat)v - 1.5);
+
+			if ( (u == 1 || u == 2) && (v == 1 || v == 2))
+				nurbCPs[u][v][2] = 4.5;
+			else
+				nurbCPs[u][v][2] = -4.5;
+		}
+	} 
 }
 
 // Initialize globals and GL.
@@ -72,6 +91,12 @@ void init(void) {
     glHint( GL_FOG_HINT, GL_NICEST );
     glFogf( GL_FOG_START, 5.0 );
     glFogf( GL_FOG_END, 50.0 );
+    
+    // NURB initialization.
+	nurb = gluNewNurbsRenderer();
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
+	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);
+    initNurbCPs();
 }
 
 /**
@@ -163,6 +188,24 @@ void makeTorus() {
     glPopMatrix();
 }
 
+// Makes NURB, harbinger of doom!
+void makeNurb() {
+    glPushMatrix();
+    glTranslatef(0, -46.5, 0);
+    glRotatef(270, 1, 0, 0);
+    gluBeginSurface(nurb);
+    gluNurbsSurface(nurb,
+        8, nurbKnots,
+        8, nurbKnots,
+        4 * 3,
+        3,
+        &nurbCPs[0][0][0],
+        4, 4,
+        GL_MAP2_VERTEX_3);
+    gluEndSurface(nurb);
+    glPopMatrix();
+}
+
 // General construction of the world; called for each viewport.
 void makeWorld() {
     glPushMatrix();
@@ -187,6 +230,7 @@ void makeWorld() {
     glColor3f(255/255.0, 0/255.0, 204/255.0);
     makeCubes(15, 1);
     makeTorus();
+    makeNurb();
     
     glPopMatrix();
 }
