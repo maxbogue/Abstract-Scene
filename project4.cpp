@@ -381,7 +381,6 @@ void makeWorld() {
     setMaterial(torusMat);
     makeCubes(15, 1);
     makeTorus();
-    // makeNurb();
     
     glPopMatrix();
 }
@@ -413,6 +412,10 @@ void display(void) {
     
     gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
     makeWorld();
+    
+    // This is placed outside of makeWorld because if it's created in the
+    // rear view then looking up causes the program to lock.
+    makeNurb();
     
     // Upper-right reverse viewport.
     glMatrixMode(GL_PROJECTION);
