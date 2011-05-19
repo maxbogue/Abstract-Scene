@@ -223,10 +223,11 @@ void makeSphereSphere(GLfloat r, int sr) {
     }
 }
 
-void makeCube() {
-    glScalef(0.5, 0.5, 0.5);
+// Make an individual cube by hand with the given texture.
+void makeCube(GLuint texture) {
+    glScalef(0.5, 0.5, 0.5); // I don't know why I need this.
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBegin(GL_QUADS);
     	// Front Face
     	glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
@@ -287,10 +288,7 @@ void makeCubes(int dist, int size) {
         GLfloat s = cubeEdgeScale * 2.0 * dist / size + 1;
         glScalef(x ? 1 : s, y ? 1 : s, z ? 1 : s);
         if (solid) {
-            
-            // glBindTexture(GL_TEXTURE_2D, textures[0]);
-            // glutSolidCube(size);
-            makeCube();
+            makeCube(textures[i]);
         } else {
             glutWireCube(size);
         }
