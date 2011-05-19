@@ -17,18 +17,22 @@
 
 using namespace std;
 
+//////////
+// Data //
+//////////
+
 // Not actually sure what these should default to..
 int width = 1024;
 int height = 768;
 
-bool solid;             // Whether shapes are solid or wireframe.
+bool solid;                 // Whether shapes are solid or wireframe.
 
-GLdouble ex, ey, ez;         // Eye coords.
-GLdouble dx, dy, dz;      // Delta from the eye to the reference.
+GLdouble ex, ey, ez;        // Eye coords.
+GLdouble dx, dy, dz;        // Delta from the eye to the reference.
 
-GLdouble rotOffset[2];    // The rotations of all spheres.
-GLdouble cubeEdgeScale;   // How scaled the cube edges are.
-bool cubeEdgeGrow;      // Whether the cube edges are grown (growing) or not.
+GLdouble rotOffset[2];      // The rotations of all spheres.
+GLdouble cubeEdgeScale;     // How scaled the cube edges are.
+bool cubeEdgeGrow;          // Whether the cube edges are grown (growing) or not.
 bool fogEnabled;
 bool lightsEnabled;
 
@@ -82,6 +86,9 @@ int t1h = 256;
 
 GLuint textures[4];
 
+////////////////////
+// Initialization //
+////////////////////
 
 // Sets all global values to their defaults.
 void reset() {
@@ -178,6 +185,10 @@ void init(void) {
         printf("Error loading texture!");
     }
 }
+
+////////////////////////
+// World Construction //
+////////////////////////
 
 /**
  * Constructs a series of spheres positioned in a ring.
@@ -391,7 +402,6 @@ void display(void) {
     glScissor(0, 0, width, height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    
     gluLookAt(ex, ey, ez, ex + dx, ey - dy, ez + dz, 0.0, 1.0, 0.0);
     makeWorld();
     
@@ -411,11 +421,16 @@ void display(void) {
     gluLookAt(ex, ey, ez, ex - dx, ey + dy, ez - dz, 0.0, 1.0, 0.0);
     makeWorld();
     
+    
     // The crucial end functions.
     glFlush();
     glutSwapBuffers();
     
 }
+
+/////////////////////////
+// Callbacks + Helpers //
+/////////////////////////
 
 // The scaling of the cube edges happens here.
 void scaleCubeEdges(int v) {
@@ -507,7 +522,7 @@ int main(int argc, char** argv) {
     glutInitWindowPosition(100, 100);
     glutCreateWindow(argv[0]);
     init();
-    // Register functions!  Oh C++ and its pseudo first-order functions...
+    // Register callbacks!  Oh C++ and its pseudo first-order functions...
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
     glutDisplayFunc(display);
