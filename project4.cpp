@@ -100,25 +100,9 @@ void reset() {
     cubeEdgeGrow = false;
 }
 
-// LoadTexturePPM - copied from Nan's directory.
-// Originally written by: Blaine Hodge
-int loadTexture(const char * filename, int w, int h) {
-    int width, height;
-    GLubyte *data;
-    FILE * file;
-
-    /* open texture data */
-    file = fopen( filename, "rb" );
-    if ( file == NULL ) return 0;
-
-    /* allocate buffer */
-    data = (GLubyte*)malloc( w * h * 3 * (sizeof(GLubyte)));
-
-    /* read texture data */
-    fread( data, w * h * 3, 1, file );
-    fclose( file );
-
-    /* build our tex image */
+// Loads a .tga texture using rgb_tga.
+int loadTexture(char * filename, int w, int h) {
+    GLubyte *data = rgb_tga(filename, &w, &h);
     // glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
