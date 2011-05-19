@@ -35,6 +35,9 @@ GLdouble cubeEdgeScale;     // How scaled the cube edges are.
 bool cubeEdgeGrow;          // Whether the cube edges are grown (growing).
 bool fogEnabled;
 bool lightsEnabled;
+GLfloat light1Position[4] = { 0.0, 20.0, 0.0, 1.0 };
+GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
+GLfloat black[] = { 0.0, 0.0, 0.0, 1.0 };
 
 // NURB data.
 GLUnurbsObj *nurb;
@@ -148,8 +151,15 @@ void init(void) {
     glLightModeli( GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE );
     GLfloat light0Position[4] = { 0.0, 1.0, 0.0, 0.0 };
     glLightfv( GL_LIGHT0, GL_POSITION, light0Position );
+    GLfloat dim[4] = { 0.3, 0.3, 0.3, 1.0 };
+    glLightfv( GL_LIGHT0, GL_AMBIENT, black );
+    glLightfv( GL_LIGHT0, GL_DIFFUSE, white );
+    glLightfv( GL_LIGHT0, GL_SPECULAR, white );
+    glLightfv( GL_LIGHT1, GL_AMBIENT, black );
+    glLightfv( GL_LIGHT1, GL_DIFFUSE, white );
+    glLightfv( GL_LIGHT1, GL_SPECULAR, black );
     glEnable( GL_LIGHT0 );
-    // glEnable( GL_LIGHT1 );
+    glEnable( GL_LIGHT1 );
     
     // Fog config. 
     glFogi( GL_FOG_MODE, GL_LINEAR );
@@ -334,6 +344,18 @@ void makeNurb() {
     glPopMatrix();
 }
 
+void makeLight1() {
+    glPushMatrix();
+    glRotatef(rotOffset[0], 1.0, 0.0, 0.0);
+    glLightfv( GL_LIGHT1, GL_POSITION, light1Position );
+    glTranslatef(light1Position[0], light1Position[1], light1Position[2]);
+    glRotatef(270.0, 1.0, 0.0, 0.0);
+    glMaterialfv( GL_FRONT, GL_EMISSION,  white );
+    glutSolidCone(0.3, 2, 15, 15);
+    glMaterialfv( GL_FRONT, GL_EMISSION,  black );
+    glPopMatrix();
+}
+
 void setMaterial(Material m) {
     glColor3f(m.c[0], m.c[1], m.c[2]);
     glMaterialfv( GL_FRONT, GL_AMBIENT,   m.a );
@@ -361,6 +383,8 @@ void makeWorld() {
     // Make the sphere of spheres touching the outer sphere.
     setMaterial(outerSpheresMat);
     makeSphereSphere(47, 5);
+    
+    makeLight1();
     
     // Make the inner sphere of spheres.
     setMaterial(innerSpheresMat);
@@ -402,7 +426,7 @@ void display(void) {
     makeWorld();
     
     // This is placed outside of makeWorld because if it's created in the
-    // rear view then looking up causes the program to lock.
+    // rear view then looking up is likely to cause the program to lock.
     makeNurb();
     
     // Upper-right reverse viewport.
