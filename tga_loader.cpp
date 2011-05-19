@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-unsigned char *rgb_tga(char *filename, int *w, int *h)
+unsigned char *rgb_tga(const char *filename, int *w, int *h)
 {
 	FILE *file = fopen(filename, "rb");
 	if (file == NULL)

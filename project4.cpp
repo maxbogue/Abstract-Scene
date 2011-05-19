@@ -32,7 +32,7 @@ GLdouble dx, dy, dz;        // Delta from the eye to the reference.
 
 GLdouble rotOffset[2];      // The rotations of all spheres.
 GLdouble cubeEdgeScale;     // How scaled the cube edges are.
-bool cubeEdgeGrow;          // Whether the cube edges are grown (growing) or not.
+bool cubeEdgeGrow;          // Whether the cube edges are grown (growing).
 bool fogEnabled;
 bool lightsEnabled;
 
@@ -81,9 +81,6 @@ Material torusMat = {
     20.0,
 };
 
-int t1w = 512;
-int t1h = 256;
-
 GLuint textures[4];
 
 ////////////////////
@@ -108,22 +105,21 @@ void reset() {
 }
 
 // Loads a .tga texture using rgb_tga.
-int loadTexture(char * filename, int w, int h) {
+void loadTexture(const char * filename, int w, int h) {
     GLubyte *data = rgb_tga(filename, &w, &h);
-    // glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
-                                          GL_UNSIGNED_BYTE, data );
+        GL_UNSIGNED_BYTE, data );
 
-    free( data );
-    return 1;
+    delete data;
 }
 
 // Initializes the NURB control points array.
-// Code taken from the nurb.c example and tweaked to my needs.
+// Code taken from the nurb.c example and tweaked slightly to my needs.
 void initNurbCPs() {
 	for (int u = 0; u < 4; u++) {
 		for (int v = 0; v < 4; v++) {
@@ -153,7 +149,7 @@ void init(void) {
     GLfloat light0Position[4] = { 0.0, 1.0, 0.0, 0.0 };
     glLightfv( GL_LIGHT0, GL_POSITION, light0Position );
     glEnable( GL_LIGHT0 );
-    glEnable( GL_LIGHT1 );
+    // glEnable( GL_LIGHT1 );
     
     // Fog config. 
     glFogi( GL_FOG_MODE, GL_LINEAR );
@@ -166,24 +162,24 @@ void init(void) {
     
     // NURB initialization.
 	nurb = gluNewNurbsRenderer();
-	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 5.0);
 	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);
     initNurbCPs();
     
-
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1);
-    // unsigned char* tex1Data = rgb_tga("tex1.tga", &t1w, &t1h);
-    glGenTextures(1, textures);
+    glGenTextures(6, textures);
     
-    // glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-    // glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
-    // glEnable(GL_TEXTURE_GEN_S);
-    // glEnable(GL_TEXTURE_GEN_T);
-
     glBindTexture(GL_TEXTURE_2D, textures[0]);
-    if (!loadTexture("tex1.tga", 256, 256)) {
-        printf("Error loading texture!");
-    }
+    loadTexture("textures/tex1.tga", 256, 256);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    loadTexture("textures/tex2.tga", 256, 256);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    loadTexture("textures/tex3.tga", 256, 256);
+    glBindTexture(GL_TEXTURE_2D, textures[3]);
+    loadTexture("textures/tex4.tga", 256, 256);
+    glBindTexture(GL_TEXTURE_2D, textures[4]);
+    loadTexture("textures/tex5.tga", 256, 256);
+    glBindTexture(GL_TEXTURE_2D, textures[5]);
+    loadTexture("textures/tex6.tga", 256, 256);
 }
 
 ////////////////////////
@@ -299,7 +295,7 @@ void makeCubes(int dist, int size) {
         GLfloat s = cubeEdgeScale * 2.0 * dist / size + 1;
         glScalef(x ? 1 : s, y ? 1 : s, z ? 1 : s);
         if (solid) {
-            makeCube(textures[i]);
+            makeCube(textures[i%6]);
         } else {
             glutWireCube(size);
         }
