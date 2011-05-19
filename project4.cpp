@@ -35,6 +35,7 @@ GLdouble cubeEdgeScale;     // How scaled the cube edges are.
 bool cubeEdgeGrow;          // Whether the cube edges are grown (growing).
 bool fogEnabled;
 bool lightsEnabled;
+bool nurbEnabled;
 GLfloat light1Position[4] = { 0.0, 20.0, 0.0, 1.0 };
 GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat black[] = { 0.0, 0.0, 0.0, 1.0 };
@@ -92,9 +93,10 @@ GLuint textures[4];
 
 // Sets all global values to their defaults.
 void reset() {
-    solid = false;
+    solid = true;
     lightsEnabled = true;
     fogEnabled = false;
+    nurbEnabled = true;
     ex = -20;
     ey = 0;
     ez = 0;
@@ -427,7 +429,9 @@ void display(void) {
     
     // This is placed outside of makeWorld because if it's created in the
     // rear view then looking up is likely to cause the program to lock.
-    makeNurb();
+    if (nurbEnabled) {
+        makeNurb();
+    }
     
     // Upper-right reverse viewport.
     glMatrixMode(GL_PROJECTION);
@@ -517,6 +521,7 @@ void keyboard(unsigned char key, int x, int y) {
         case 'q': exit(0);
         case 'f': fogEnabled = !fogEnabled; break;
         case 'l': lightsEnabled = !lightsEnabled; break;
+        case 'n': nurbEnabled = !nurbEnabled; break;
     }
 }
 

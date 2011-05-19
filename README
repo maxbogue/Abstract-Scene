@@ -1,5 +1,9 @@
 Name: Max Bogue
-Date: 5/8/2011
+Date: 5/18/2011
+
+ATTN: If you experiece freezing problems, please press 'n' to hide the
+NURB.  It likes to make the scene freeze and crash for me.  Also please
+note that there are 6 different patterns used among the cubes.
 
 An awesome 3D scene for CG1.  Developed and built on Mac OS X, but the
 makefile supports the following:
@@ -13,6 +17,3 @@ makefile supports the following:
     Cleanup:
       - make clean
       - make realclean
-
-If the scene becomes laggy, I suggest removing the NURB, as it tends
-to reek havoc on the framerate.
